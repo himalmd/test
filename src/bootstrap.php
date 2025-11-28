@@ -65,3 +65,37 @@ $dbUser = getenv('DB_USER') ?: 'root';
 $dbPass = getenv('DB_PASS') ?: '';
 
 \Snaply\Config\Database::configure($dbHost, $dbName, $dbUser, $dbPass);
+
+// Media storage configuration
+// These can be overridden by setting environment variables
+$mediaStorageConfig = [
+    'storage_type' => getenv('MEDIA_STORAGE_TYPE') ?: 'local',
+    'local' => [
+        'base_path' => getenv('MEDIA_BASE_PATH') ?: __DIR__ . '/../uploads/media',
+        'base_url' => getenv('MEDIA_BASE_URL') ?: '/uploads/media',
+        'max_file_size' => (int)(getenv('MEDIA_MAX_FILE_SIZE') ?: 10 * 1024 * 1024),
+        'allowed_mime_types' => null, // Use defaults
+        'placeholder_url' => getenv('MEDIA_PLACEHOLDER_URL') ?: '/assets/images/placeholder.png',
+    ],
+];
+
+/**
+ * Get media storage configuration.
+ *
+ * @return array<string, mixed>
+ */
+function getMediaStorageConfig(): array
+{
+    global $mediaStorageConfig;
+    return $mediaStorageConfig;
+}
+
+/**
+ * Create a MediaStorageService instance with default configuration.
+ *
+ * @return \Snaply\Services\Media\MediaStorageService
+ */
+function createMediaStorageService(): \Snaply\Services\Media\MediaStorageService
+{
+    return \Snaply\Services\Media\MediaStorageService::create(getMediaStorageConfig());
+}
