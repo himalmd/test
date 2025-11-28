@@ -48,3 +48,51 @@ See [schema/snaply_schema.md](schema/snaply_schema.md) for complete documentatio
 - InnoDB storage engine
 - Character set: utf8mb4
 - Collation: utf8mb4_unicode_ci
+
+## Running Migrations
+
+### Quick Start
+
+1. Create your database:
+   ```sql
+   CREATE DATABASE snaply CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+
+2. Run all migrations:
+   ```bash
+   mysql -u <username> -p snaply < database/migrations/run_migrations.sql
+   ```
+
+### Individual Migrations
+
+Migrations can also be run individually in dependency order:
+
+```bash
+mysql -u <username> -p snaply < database/migrations/001_create_projects_table.sql
+mysql -u <username> -p snaply < database/migrations/002_create_media_table.sql
+mysql -u <username> -p snaply < database/migrations/003_create_pages_table.sql
+mysql -u <username> -p snaply < database/migrations/004_create_snapshots_table.sql
+mysql -u <username> -p snaply < database/migrations/005_create_comments_table.sql
+```
+
+### Rollback (Development Only)
+
+To drop all tables and start fresh:
+
+```bash
+mysql -u <username> -p snaply < database/migrations/rollback_all.sql
+```
+
+**Warning**: This permanently deletes all data. Use only in development environments.
+
+## Migration Files
+
+| File | Description |
+|------|-------------|
+| `001_create_projects_table.sql` | Projects table with status enum and soft delete |
+| `002_create_media_table.sql` | Media storage abstraction table |
+| `003_create_pages_table.sql` | Pages table with FK to projects |
+| `004_create_snapshots_table.sql` | Snapshots with dimensions and FK to pages/media |
+| `005_create_comments_table.sql` | Comments with normalised coordinates |
+| `run_migrations.sql` | Master script to run all migrations |
+| `rollback_all.sql` | Drop all tables (development only)
