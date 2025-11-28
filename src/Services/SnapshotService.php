@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Snaply\Services;
 
-use DateTimeImmutable;
+use DateTime;
 use Snaply\Api\ApiException;
 use Snaply\Config\Database;
 use Snaply\Models\Snapshot;
@@ -15,7 +15,6 @@ use Snaply\Repositories\CommentRepository;
 use Snaply\Repositories\MediaRepository;
 use Snaply\Services\Media\MediaStorageService;
 use Snaply\Services\Media\UploadedFile;
-use PDO;
 use Throwable;
 
 /**
@@ -73,19 +72,20 @@ class SnapshotService
             ]);
 
             // Create the snapshot
-            $snapshot = new Snapshot();
-            $snapshot->setPageId($pageId);
-            $snapshot->setMediaId($media->getId());
-            $snapshot->setWidth((int) $data['width']);
-            $snapshot->setHeight((int) $data['height']);
+            $snapshot = new Snapshot(
+                $pageId,
+                $media->getId(),
+                (int) $data['width'],
+                (int) $data['height']
+            );
 
             if (isset($data['captured_at'])) {
-                $snapshot->setCapturedAt(new DateTimeImmutable($data['captured_at']));
+                $snapshot->setCapturedAt(new DateTime($data['captured_at']));
             } else {
-                $snapshot->setCapturedAt(new DateTimeImmutable());
+                $snapshot->setCapturedAt(new DateTime());
             }
 
-            $snapshot = $this->snapshotRepository->save($snapshot);
+            $snapshot = $this->snapshotRepository->create($snapshot);
 
             $pdo->commit();
 
@@ -144,19 +144,20 @@ class SnapshotService
             );
 
             // Create the snapshot
-            $snapshot = new Snapshot();
-            $snapshot->setPageId($pageId);
-            $snapshot->setMediaId($media->getId());
-            $snapshot->setWidth((int) $data['width']);
-            $snapshot->setHeight((int) $data['height']);
+            $snapshot = new Snapshot(
+                $pageId,
+                $media->getId(),
+                (int) $data['width'],
+                (int) $data['height']
+            );
 
             if (isset($data['captured_at'])) {
-                $snapshot->setCapturedAt(new DateTimeImmutable($data['captured_at']));
+                $snapshot->setCapturedAt(new DateTime($data['captured_at']));
             } else {
-                $snapshot->setCapturedAt(new DateTimeImmutable());
+                $snapshot->setCapturedAt(new DateTime());
             }
 
-            $snapshot = $this->snapshotRepository->save($snapshot);
+            $snapshot = $this->snapshotRepository->create($snapshot);
 
             $pdo->commit();
 
@@ -340,7 +341,7 @@ class SnapshotService
 
         if (isset($data['captured_at'])) {
             try {
-                new DateTimeImmutable($data['captured_at']);
+                new DateTime($data['captured_at']);
             } catch (Throwable) {
                 $errors['captured_at'] = 'Invalid date format';
             }

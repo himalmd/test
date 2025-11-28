@@ -50,15 +50,43 @@ class PageService
 
         $this->validatePageData($data, true);
 
-        $page = new Page();
-        $page->setProjectId($projectId);
-        $page->setUrl($data['url']);
+        // Generate title from URL if not provided
+        $title = $data['title'] ?? $this->generateTitleFromUrl($data['url']);
 
-        if (isset($data['title'])) {
-            $page->setTitle($data['title']);
+        // Generate slug from title
+        $slug = Page::generateSlug($title);
+        $slug = $this->pageRepository->generateUniqueSlug($projectId, $slug);
+
+        $page = new Page(
+            $projectId,
+            $data['url'],
+            $slug,
+            $title
+        );
+
+        return $this->pageRepository->create($page);
+    }
+
+    /**
+     * Generate a title from a URL.
+     */
+    private function generateTitleFromUrl(string $url): string
+    {
+        $parsed = parse_url($url);
+        $host = $parsed['host'] ?? '';
+        $path = $parsed['path'] ?? '/';
+
+        if ($path === '/' || $path === '') {
+            return $host ?: 'Untitled Page';
         }
 
-        return $this->pageRepository->save($page);
+        // Use the last path segment as title
+        $segments = array_filter(explode('/', $path));
+        $lastSegment = end($segments) ?: 'page';
+
+        // Convert dashes/underscores to spaces and capitalise
+        $title = str_replace(['-', '_'], ' ', $lastSegment);
+        return ucwords($title);
     }
 
     /**
@@ -124,11 +152,21 @@ class PageService
             $page->setUrl($data['url']);
         }
 
-        if (array_key_exists('title', $data)) {
+        if (array_key_exists('title', $data) && $data['title'] !== null) {
             $page->setTitle($data['title']);
+            // Regenerate slug if title changes
+            $newSlug = Page::generateSlug($data['title']);
+            $newSlug = $this->pageRepository->generateUniqueSlug(
+                $page->getProjectId(),
+                $newSlug,
+                $page->getId()
+            );
+            $page->setSlug($newSlug);
         }
 
-        return $this->pageRepository->save($page);
+        $this->pageRepository->update($page);
+
+        return $this->pageRepository->findById($id, true);
     }
 
     /**
@@ -141,7 +179,7 @@ class PageService
     public function delete(int $id): bool
     {
         $this->get($id); // Verify exists and parent not deleted
-        return $this->pageRepository->softDelete($id);
+        return $this->pageRepository->delete($id);
     }
 
     /**

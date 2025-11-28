@@ -38,14 +38,12 @@ class ProjectService
     {
         $this->validateProjectData($data, true);
 
-        $project = new Project();
-        $project->setName($data['name']);
+        $project = new Project(
+            $data['name'],
+            $data['description'] ?? null
+        );
 
-        if (isset($data['description'])) {
-            $project->setDescription($data['description']);
-        }
-
-        return $this->projectRepository->save($project);
+        return $this->projectRepository->create($project);
     }
 
     /**
@@ -99,7 +97,9 @@ class ProjectService
             $project->setDescription($data['description']);
         }
 
-        return $this->projectRepository->save($project);
+        $this->projectRepository->update($project);
+
+        return $this->projectRepository->findById($id, true);
     }
 
     /**
@@ -112,7 +112,7 @@ class ProjectService
     public function delete(int $id): bool
     {
         $this->get($id); // Verify exists
-        return $this->projectRepository->softDelete($id);
+        return $this->projectRepository->delete($id);
     }
 
     /**

@@ -57,10 +57,11 @@ class CommentService
         $this->validateSnapshotAccessible($snapshotId);
         $this->validateCommentData($data, true);
 
-        $comment = new Comment();
-        $comment->setSnapshotId($snapshotId);
-        $comment->setAuthorName($data['author_name']);
-        $comment->setContent($data['content']);
+        $comment = new Comment(
+            $snapshotId,
+            $data['author_name'],
+            $data['content']
+        );
 
         if (isset($data['author_email'])) {
             $comment->setAuthorEmail($data['author_email']);
@@ -87,7 +88,7 @@ class CommentService
             }
         }
 
-        return $this->commentRepository->save($comment);
+        return $this->commentRepository->create($comment);
     }
 
     /**
@@ -181,7 +182,9 @@ class CommentService
             }
         }
 
-        return $this->commentRepository->save($comment);
+        $this->commentRepository->update($comment);
+
+        return $this->commentRepository->findById($id);
     }
 
     /**
