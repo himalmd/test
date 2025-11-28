@@ -1,0 +1,4 @@
+# Ignore all uploaded media files but keep directory
+*
+!.gitignore
+!.gitkeep

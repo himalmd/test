@@ -382,8 +382,8 @@ class SnapshotService
         // Fallback to basic local storage config
         return MediaStorageService::create([
             'storage_type' => 'local',
-            'storage_path' => dirname(__DIR__, 2) . '/storage/media',
-            'public_url_base' => '/storage/media',
+            'base_path' => dirname(__DIR__, 2) . '/uploads/media',
+            'base_url' => '/uploads/media',
         ]);
     }
 }
